@@ -4,39 +4,114 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>All Pink Beauty | Luxury Experience</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ff2d88">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="All Pink">
+    <link rel="apple-touch-icon" href="icone-192.png">
+
     <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --pink-vibrant: #ff2d88; --pink-soft: #ffccd5; --bg-app: #0f0f0f; --text-main: #ffffff; }
+        :root { --pink-vibrant: #ff2d88; --pink-soft: #ffccd5; --bg-app: #ffffff; --text-main: #000000; --ease: cubic-bezier(0.23, 1, 0.32, 1); --bounce: cubic-bezier(0.34, 1.56, 0.64, 1); }
+        body.dark-mode { --bg-app: #0f0f0f; --text-main: #ffffff; --pink-soft: #4a0e2a; }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg-app); font-family: 'Inter', sans-serif; color: var(--text-main); overflow: hidden; height: 100vh; }
-        .app-shell { width: 100%; max-width: 500px; height: 100vh; position: relative; margin: auto; overflow: hidden; }
-        .bg-layer { position: absolute; top: 0; width: 100%; height: 100%; background: #4a0e2a; clip-path: polygon(100% 0, 100% 60%, 0 100%, 0 0); z-index: 1; transition: 0.8s; }
-        header { position: absolute; top: 40px; width: 100%; display: flex; justify-content: space-between; padding: 0 25px; z-index: 5000; }
-        .track { display: flex; height: 100%; transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1); position: relative; z-index: 10; }
-        .slide { min-width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px; text-align: center; }
-        .slide img { max-width: 80%; filter: drop-shadow(0 30px 50px rgba(0,0,0,0.5)); border-radius: 15px; }
-        .add-btn { background: var(--pink-vibrant); color: white; border: none; padding: 18px; width: 260px; font-weight: 700; border-radius: 50px; margin-top: 20px; cursor: pointer; }
-        .cart-page { position: absolute; top: 0; right: -100%; width: 100%; height: 100%; background: #111; z-index: 10000; transition: 0.5s; padding: 80px 25px; }
+        
+        body { background-color: var(--bg-app); font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; width: 100vw; display: flex; justify-content: center; transition: background 0.5s var(--ease); }
+        
+        .app-shell { width: 100%; max-width: 500px; height: 100vh; background: var(--bg-app); position: relative; overflow: hidden; }
+        .bg-layer { position: absolute; top: 0; right: 0; width: 100%; height: 100%; background: var(--pink-soft); clip-path: polygon(100% 0, 100% 60%, 0 100%, 0 0); transition: background 0.8s var(--ease); z-index: 1; }
+        
+        header { position: absolute; top: env(safe-area-inset-top, 40px); width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; z-index: 5000; }
+        .logo-text { font-family: 'Bodoni Moda', serif; font-size: 24px; color: var(--text-main); font-weight: 700; }
+        
+        .header-actions { display: flex; gap: 20px; align-items: center; }
+        .theme-toggle { cursor: pointer; font-size: 24px; color: var(--text-main); }
+        
+        .cart-btn { cursor: pointer; position: relative; color: var(--text-main); }
+        .cart-icon-svg { width: 24px; height: 24px; border: 2px solid currentColor; border-top: none; position: relative; }
+        .cart-icon-svg::after { content: ''; position: absolute; top: -9px; left: 5px; width: 10px; height: 8px; border: 2px solid currentColor; border-bottom: none; border-radius: 10px 10px 0 0; }
+        
+        .badge { position: absolute; top: -5px; right: -8px; background: var(--pink-vibrant); color: white; font-size: 11px; width: 20px; height: 20px; border-radius: 50%; display: none; justify-content: center; align-items: center; font-weight: bold; }
+        
+        .viewport { width: 100%; height: 100%; position: relative; z-index: 10; overflow: hidden; touch-action: pan-y; }
+        .track { display: flex; height: 100%; transition: transform 0.6s var(--ease); }
+        
+        .slide { min-width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 100px 20px 40px; text-align: center; }
+        .product-frame { height: 45vh; width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; position: relative; }
+        .product-frame img { max-width: 85%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 40px 60px rgba(0,0,0,0.1)); opacity: 0; transform: scale(0.3); }
+        
+        .slide.active img { animation: growIn 0.8s var(--bounce) forwards; }
+        @keyframes growIn { 0% { transform: scale(0.3) translateY(40px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+        
+        .nav-arrows { position: absolute; top: 45%; left: 0; width: 100%; display: flex; justify-content: space-between; padding: 0 15px; z-index: 20; pointer-events: none; }
+        .arrow-btn { width: 44px; height: 44px; border-radius: 50%; background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2); color: var(--text-main); display: flex; justify-content: center; align-items: center; cursor: pointer; pointer-events: auto; transition: all 0.3s var(--ease); }
+        .arrow-btn:active { transform: scale(0.9); }
+        .arrow-btn.disabled { opacity: 0.2; pointer-events: none; }
+        
+        .meta { color: var(--text-main); transition: 0.6s; opacity: 0; transform: translateY(20px); }
+        .slide.active .meta { opacity: 1; transform: translateY(0); transition-delay: 0.3s; }
+        .meta h3 { font-family: 'Bodoni Moda', serif; font-size: 28px; margin-bottom: 5px; }
+        .price { color: var(--pink-vibrant); font-weight: 600; font-size: 24px; display: block; margin-bottom: 20px; }
+        
+        .add-btn { background: var(--text-main); color: var(--bg-app); border: none; padding: 20px; width: 280px; font-size: 14px; font-weight: 700; text-transform: uppercase; cursor: pointer; border-radius: 4px; }
+        
+        /* Carrinho */
+        .cart-page { position: absolute; top: 0; right: -100%; width: 100%; height: 100%; background: var(--bg-app); z-index: 10000; transition: 0.5s var(--ease); padding: 100px 25px 40px; display: flex; flex-direction: column; }
         .cart-page.active { right: 0; }
-        .whatsapp-btn { background: #25D366; color: white; border: none; padding: 20px; width: 100%; font-weight: 700; border-radius: 10px; margin-top: 20px; cursor: pointer; }
+        .close-x { position: absolute; top: 40px; right: 30px; font-size: 40px; cursor: pointer; color: var(--text-main); z-index: 10; }
+        .cart-content { position: relative; z-index: 5; height: 100%; display: flex; flex-direction: column; color: var(--text-main); }
+        .cart-list { flex-grow: 1; overflow-y: auto; margin-bottom: 20px; }
+        .cart-item { display: flex; align-items: center; gap: 15px; padding: 15px 0; border-bottom: 1px solid rgba(128,128,128,0.1); }
+        .prod-thumb { width: 60px; height: 60px; background: #fff; border-radius: 8px; overflow: hidden; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+        .prod-thumb img { max-width: 80%; }
+        .whatsapp-btn { background: #25D366; color: white; border: none; padding: 22px; width: 100%; font-weight: 700; text-transform: uppercase; border-radius: 8px; font-size: 16px; cursor: pointer; }
+        
+        #loading { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-app); z-index: 9999; display: flex; justify-content: center; align-items: center; color: var(--pink-vibrant); font-family: 'Bodoni Moda'; font-size: 24px; transition: 0.5s; }
     </style>
 </head>
-<body>
+<body class="dark-mode">
+
     <div class="app-shell">
+        <div id="loading">Carregando Catálogo...</div>
         <div class="bg-layer" id="bg-master"></div>
+
         <header>
-            <div style="font-family:'Bodoni Moda'; font-size:24px;">All Pink Beauty</div>
-            <div onclick="toggleCart()" style="cursor:pointer;">🛒 <span id="badge" style="background:var(--pink-vibrant); border-radius:50%; padding:2px 7px; font-size:12px; display:none;">0</span></div>
+            <div class="logo-container">
+                <span class="logo-text">All Pink Beauty</span>
+            </div>
+            <div class="header-actions">
+                <div class="theme-toggle" id="themeIcon">☀️</div>
+                <div class="cart-btn" id="cartToggleBtn">
+                    <div class="cart-icon-svg"></div>
+                    <div class="badge" id="badge">0</div>
+                </div>
+            </div>
         </header>
 
-        <div class="track" id="track"></div>
+        <div class="viewport" id="viewport">
+            <div class="nav-arrows">
+                <div class="arrow-btn" id="prevBtn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                </div>
+                <div class="arrow-btn" id="nextBtn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </div>
+            </div>
+            <div class="track" id="track"></div>
+        </div>
 
         <div class="cart-page" id="cartPage">
-            <h2 style="font-family:'Bodoni Moda'; font-size:32px; color:var(--pink-vibrant);">Sacola</h2>
-            <div id="cartItems" style="margin: 30px 0; max-height: 50vh; overflow-y: auto;"></div>
-            <p>Total: <b id="totalDisplay">R$ 0,00</b></p>
-            <button class="whatsapp-btn" onclick="checkout()">FINALIZAR NO WHATSAPP</button>
-            <p onclick="toggleCart()" style="margin-top:30px; text-align:center; opacity:0.6; cursor:pointer;">Voltar</p>
+            <div class="close-x" id="closeCartBtn">✕</div>
+            <div class="cart-content">
+                <h2 style="font-family:'Bodoni Moda'; font-size:35px; margin-bottom:10px">Seu Carrinho</h2>
+                <div class="cart-list" id="cartItems"></div>
+                <div style="padding-top:20px; border-top:2px solid var(--text-main);">
+                    <p style="font-weight: 600; font-size: 20px; display:flex; justify-content:space-between; margin-bottom: 20px;">TOTAL: <span id="totalDisplay">R$ 0,00</span></p>
+                    <button class="whatsapp-btn" id="checkoutBtn">PEDIR NO WHATSAPP</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -44,68 +119,133 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+        // Sua configuração oficial
         const firebaseConfig = {
             apiKey: "AIzaSyDSfj6A4PortbieMelYDPNwZ9rJ84BW7ns",
-            authDomain: "all-pink.firebaseapp.app",
+            authDomain: "all-pink.firebaseapp.com",
             databaseURL: "https://all-pink-default-rtdb.firebaseio.com",
             projectId: "all-pink",
             storageBucket: "all-pink.firebasestorage.app",
             messagingSenderId: "932996264727",
-            appId: "1:932996264727:web:fe800602542154f753bd52"
+            appId: "1:932996264727:web:fe800602542154f753bd52",
+            measurementId: "G-BB83D3BRNW"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        let index = 0, cart = [], prods = [];
 
-        onValue(ref(db, 'produtos'), (snap) => {
-            const data = snap.val();
-            if(!data) return;
-            prods = Object.values(data);
+        let meusProdutos = [];
+        let cart = [];
+        let index = 0;
+
+        // Escutando o banco de dados
+        const produtosRef = ref(db, 'produtos');
+        onValue(produtosRef, (snapshot) => {
+            const data = snapshot.val();
+            document.getElementById('loading').style.display = 'none';
+            if (data) {
+                meusProdutos = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+                renderizarProdutos();
+            } else {
+                document.getElementById('track').innerHTML = `<h3 style="margin-top:200px; color:var(--text-main)">Nenhum produto disponível.</h3>`;
+            }
+        });
+
+        function renderizarProdutos() {
             const track = document.getElementById('track');
-            track.innerHTML = prods.map((p, i) => `
-                <div class="slide">
-                    <img src="${p.foto}">
-                    <h3 style="margin-top:20px;">${p.nome}</h3>
-                    <p style="color:var(--pink-vibrant); font-size:20px; font-weight:bold;">R$ ${p.preco.toFixed(2)}</p>
-                    <button class="add-btn" onclick="addToCart(${i})">ADICIONAR</button>
+            track.innerHTML = meusProdutos.map((p, i) => `
+                <div class="slide ${i === index ? 'active' : ''}" data-bg="${p.cor}">
+                    <div class="product-frame"><img src="${p.foto}"></div>
+                    <div class="meta">
+                        <h3>${p.nome}</h3>
+                        <span class="price">R$ ${p.preco.toFixed(2).replace('.', ',')}</span>
+                        <button class="add-btn" data-index="${i}">ADICIONAR AO CARRINHO</button>
+                    </div>
                 </div>
             `).join('');
-            update();
-        });
-
-        function update() { 
-            if(prods.length > 0) {
-                document.getElementById('track').style.transform = `translateX(-${index * 100}%)`; 
-                document.getElementById('bg-master').style.background = prods[index]?.cor || '#4a0e2a';
-            }
+            
+            document.querySelectorAll('.add-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => addToCart(e.target.dataset.index));
+            });
+            updateLayout();
         }
 
-        window.addToCart = (i) => { cart.push(prods[i]); updateUI(); };
-        function updateUI() {
+        function updateLayout() {
+            const slides = document.querySelectorAll('.slide');
+            if(slides.length === 0) return;
+            
+            document.getElementById('track').style.transform = `translateX(-${index * 100}%)`;
+            const currentSlide = slides[index];
+            document.getElementById('bg-master').style.background = currentSlide.dataset.bg;
+
+            slides.forEach((s, i) => {
+                s.classList.toggle('active', i === index);
+            });
+
+            document.getElementById('prevBtn').classList.toggle('disabled', index === 0);
+            document.getElementById('nextBtn').classList.toggle('disabled', index === meusProdutos.length - 1);
+        }
+
+        // Navegação
+        document.getElementById('prevBtn').addEventListener('click', () => { if(index > 0) { index--; updateLayout(); }});
+        document.getElementById('nextBtn').addEventListener('click', () => { if(index < meusProdutos.length - 1) { index++; updateLayout(); }});
+
+        // Carrinho
+        function addToCart(i) {
+            cart.push(meusProdutos[i]);
+            updateCartUI();
+        }
+
+        window.removeFromCart = function(i) {
+            cart.splice(i, 1);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
             const badge = document.getElementById('badge');
-            badge.innerText = cart.length; badge.style.display = 'inline';
-            const total = cart.reduce((a, b) => a + b.preco, 0);
-            document.getElementById('totalDisplay').innerText = `R$ ${total.toFixed(2)}`;
-            document.getElementById('cartItems').innerHTML = cart.map(p => `<p style="margin-bottom:10px">${p.nome} - R$ ${p.preco.toFixed(2)}</p>`).join('');
+            badge.innerText = cart.length;
+            badge.style.display = cart.length > 0 ? 'flex' : 'none';
+            
+            document.getElementById('cartItems').innerHTML = cart.map((item, i) => `
+                <div class="cart-item">
+                    <div class="prod-thumb"><img src="${item.foto}"></div>
+                    <div style="flex-grow:1"><strong>${item.nome}</strong><br><small>R$ ${item.preco.toFixed(2).replace('.', ',')}</small></div>
+                    <div style="cursor:pointer; padding:10px" onclick="window.removeFromCart(${i})">✕</div>
+                </div>
+            `).join('');
+            
+            const total = cart.reduce((acc, item) => acc + item.preco, 0);
+            document.getElementById('totalDisplay').innerText = `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
         }
 
-        window.toggleCart = () => document.getElementById('cartPage').classList.toggle('active');
-        window.checkout = () => {
-            const msg = encodeURIComponent(`*Novo Pedido All Pink*\n${cart.map(p => `• ${p.nome}`).join('\n')}\n\nTotal: R$ ${cart.reduce((a,b)=>a+b.preco,0).toFixed(2)}`);
-            window.open(`https://wa.me/5511965972240?text=${msg}`);
-        };
-
-        let x = 0;
-        document.body.addEventListener('touchstart', e => x = e.touches[0].clientX);
-        document.body.addEventListener('touchend', e => {
-            let d = x - e.changedTouches[0].clientX;
-            if(Math.abs(d) > 50) {
-                if(d > 0 && index < prods.length-1) index++;
-                else if(d < 0 && index > 0) index--;
-                update();
-            }
+        // Toggles da Interface
+        document.getElementById('cartToggleBtn').addEventListener('click', () => document.getElementById('cartPage').classList.add('active'));
+        document.getElementById('closeCartBtn').addEventListener('click', () => document.getElementById('cartPage').classList.remove('active'));
+        
+        document.getElementById('themeIcon').addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            document.getElementById('themeIcon').innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
         });
+
+        // Checkout WhatsApp
+        document.getElementById('checkoutBtn').addEventListener('click', () => {
+            if (cart.length === 0) return alert("Seu carrinho está vazio!");
+            const numero = "5511965972240"; 
+            let msg = "*Novo Pedido - All Pink Beauty*\n\n";
+            cart.forEach(item => msg += `• ${item.nome} - R$ ${item.preco.toFixed(2).replace('.', ',')}\n`);
+            const total = cart.reduce((acc, item) => acc + item.preco, 0);
+            msg += `\n*Total: R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}*`;
+            window.open(`https://wa.me/${numero}?text=${encodeURIComponent(msg)}`);
+        });
+
+        // Registro do Service Worker (PWA)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('App pronto para instalação!'))
+                .catch(err => console.log('Erro no PWA:', err));
+            });
+        }
     </script>
 </body>
 </html>
