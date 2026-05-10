@@ -6,7 +6,7 @@
     <title>All Pink Beauty</title>
     <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --pink-vibrant: #ff2d88; --bg: #0f0f0f; --text: #ffffff; }
+        :root { --pink: #ff2d88; --bg: #0f0f0f; --text: #ffffff; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); overflow: hidden; height: 100vh; }
         .app-shell { width: 100%; max-width: 500px; height: 100vh; position: relative; margin: auto; }
@@ -14,20 +14,27 @@
         header { position: absolute; top: 40px; width: 100%; display: flex; justify-content: space-between; padding: 0 25px; z-index: 5000; }
         .track { display: flex; height: 100%; transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1); }
         .slide { min-width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px; z-index: 10; text-align: center; }
-        .slide img { max-width: 80%; filter: drop-shadow(0 30px 50px rgba(0,0,0,0.5)); border-radius: 15px; }
-        .add-btn { background: var(--pink-vibrant); color: white; border: none; padding: 18px; width: 260px; font-weight: 700; border-radius: 50px; margin-top: 20px; }
+        .slide img { max-width: 80%; border-radius: 15px; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5)); }
+        .add-btn { background: var(--pink); color: white; border: none; padding: 18px; width: 260px; font-weight: 700; border-radius: 50px; margin-top: 20px; cursor: pointer; }
         .cart-page { position: absolute; top: 0; right: -100%; width: 100%; height: 100%; background: #111; z-index: 10000; transition: 0.5s; padding: 80px 25px; }
         .cart-page.active { right: 0; }
     </style>
 </head>
 <body>
-    <div class="app-shell"><div class="bg-layer" id="bg-master"></div>
-        <header><div style="font-family:'Bodoni Moda'; font-size:24px;">All Pink Beauty</div>
-        <div onclick="toggleCart()" style="cursor:pointer;">🛒 <span id="badge" style="background:var(--pink-vibrant); border-radius:50%; padding:2px 7px; font-size:12px; display:none;">0</span></div></header>
+    <div class="app-shell">
+        <div class="bg-layer" id="bg-master"></div>
+        <header>
+            <div style="font-family:'Bodoni Moda'; font-size:24px;">All Pink Beauty</div>
+            <div onclick="toggleCart()" style="cursor:pointer;">🛒 <span id="badge" style="background:var(--pink); border-radius:50%; padding:2px 7px; font-size:12px; display:none;">0</span></div>
+        </header>
         <div class="track" id="track"></div>
-        <div class="cart-page" id="cartPage"><h2 style="font-family:'Bodoni Moda'; font-size:32px;">Sacola</h2><div id="cartItems" style="margin: 30px 0;"></div>
-        <p>Total: <b id="totalDisplay">R$ 0,00</b></p><button onclick="checkout()" style="background:#25D366; color:white; width:100%; padding:20px; border-radius:10px; border:none; margin-top:20px;">WHATSAPP</button>
-        <p onclick="toggleCart()" style="margin-top:30px; text-align:center; opacity:0.6; cursor:pointer;">Voltar</p></div>
+        <div class="cart-page" id="cartPage">
+            <h2 style="font-family:'Bodoni Moda'; font-size:32px;">Sacola</h2>
+            <div id="cartItems" style="margin: 30px 0;"></div>
+            <p>Total: <b id="totalDisplay">R$ 0,00</b></p>
+            <button onclick="checkout()" style="background:#25D366; color:white; width:100%; padding:20px; border:none; border-radius:10px; font-weight:bold; margin-top:20px;">PEDIR NO WHATSAPP</button>
+            <p onclick="toggleCart()" style="margin-top:30px; text-align:center; opacity:0.6; cursor:pointer;">Voltar</p>
+        </div>
     </div>
 
     <script type="module">
@@ -51,23 +58,51 @@
         onValue(ref(db, 'produtos'), (snap) => {
             const data = snap.val();
             if(!data) return;
+            // Filtra apenas produtos com stock > 0
             prods = Object.values(data).filter(p => (p.estoque || 0) > 0);
             document.getElementById('track').innerHTML = prods.map((p, i) => `
-                <div class="slide"><img src="${p.foto}"><h3>${p.nome}</h3><p style="color:var(--pink-vibrant); font-weight:bold;">R$ ${p.preco.toFixed(2)}</p><button class="add-btn" onclick="addToCart(${i})">ADICIONAR</button></div>
+                <div class="slide">
+                    <img src="${p.foto}">
+                    <h3 style="margin-top:20px;">${p.nome}</h3>
+                    <p style="color:var(--pink); font-size:20px; font-weight:bold;">R$ ${p.preco.toFixed(2)}</p>
+                    <button class="add-btn" onclick="addToCart(${i})">ADICIONAR</button>
+                </div>
             `).join('');
             update();
         });
 
-        function update() { document.getElementById('track').style.transform = `translateX(-${index * 100}%)`; document.getElementById('bg-master').style.background = prods[index]?.cor || '#4a0e2a'; }
-        window.addToCart = (i) => { cart.push(prods[i]); updateUI(); };
-        function updateUI() { document.getElementById('badge').innerText = cart.length; document.getElementById('badge').style.display = 'inline';
-            document.getElementById('totalDisplay').innerText = `R$ ${cart.reduce((a, b) => a + b.preco, 0).toFixed(2)}`;
-            document.getElementById('cartItems').innerHTML = cart.map(p => `<p>${p.nome} - R$ ${p.preco.toFixed(2)}</p>`).join(''); }
-        window.toggleCart = () => document.getElementById('cartPage').classList.toggle('active');
-        window.checkout = () => { window.open(`https://wa.me/5511965972240?text=${encodeURIComponent("*Novo Pedido*\n"+cart.map(p => "• "+p.nome).join('\n'))}`); };
+        function update() { 
+            if(prods.length > 0) {
+                document.getElementById('track').style.transform = `translateX(-${index * 100}%)`; 
+                document.getElementById('bg-master').style.background = prods[index]?.cor || '#4a0e2a';
+            }
+        }
 
-        let x = 0; document.body.addEventListener('touchstart', e => x = e.touches[0].clientX);
-        document.body.addEventListener('touchend', e => { let d = x - e.changedTouches[0].clientX; if(Math.abs(d) > 50) { if(d > 0 && index < prods.length-1) index++; else if(d < 0 && index > 0) index--; update(); } });
+        window.addToCart = (i) => { cart.push(prods[i]); updateUI(); };
+        function updateUI() {
+            const badge = document.getElementById('badge');
+            badge.innerText = cart.length; badge.style.display = 'inline';
+            const total = cart.reduce((a, b) => a + b.preco, 0);
+            document.getElementById('totalDisplay').innerText = `R$ ${total.toFixed(2)}`;
+            document.getElementById('cartItems').innerHTML = cart.map(p => `<p>${p.nome} - R$ ${p.preco.toFixed(2)}</p>`).join('');
+        }
+
+        window.toggleCart = () => document.getElementById('cartPage').classList.toggle('active');
+        window.checkout = () => {
+            const msg = encodeURIComponent(`*Novo Pedido All Pink*\n${cart.map(p => `• ${p.nome}`).join('\n')}\n\nTotal: R$ ${cart.reduce((a,b)=>a+b.preco,0).toFixed(2)}`);
+            window.open(`https://wa.me/5511965972240?text=${msg}`);
+        };
+
+        let x = 0;
+        document.body.addEventListener('touchstart', e => x = e.touches[0].clientX);
+        document.body.addEventListener('touchend', e => {
+            let d = x - e.changedTouches[0].clientX;
+            if(Math.abs(d) > 50) {
+                if(d > 0 && index < prods.length-1) index++;
+                else if(d < 0 && index > 0) index--;
+                update();
+            }
+        });
     </script>
 </body>
 </html>

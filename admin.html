@@ -2,16 +2,18 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Estoque Allpink</title>
+    <title>Estoque | All Pink</title>
     <style>
         body { background: #f4f4f4; font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .card { background: white; padding: 20px; margin-bottom: 15px; border-radius: 12px; width: 100%; max-width: 400px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        button { width: 40px; height: 40px; border: none; background: #eee; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 20px; }
+        .card { background: white; padding: 20px; margin-bottom: 10px; border-radius: 12px; width: 100%; max-width: 400px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        button { width: 45px; height: 45px; border: none; background: #eee; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 20px; }
+        .out { color: red; font-weight: bold; }
     </style>
 </head>
 <body>
-    <h1 style="color: #ff2d88;">Gestão de Estoque</h1>
-    <div id="lista"></div>
+    <h1 style="color: #ff2d88; margin-bottom: 20px;">Gestão de Estoque</h1>
+    <div id="lista" style="width: 100%; max-width: 400px;"></div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -29,17 +31,25 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        const pass = prompt("Senha:");
+        const pass = prompt("Senha Admin:");
         if(pass !== "adminallpink2026") window.location.href = "index.html";
 
         onValue(ref(db, 'produtos'), (snap) => {
+            const container = document.getElementById('lista');
+            container.innerHTML = "";
             const data = snap.val();
-            document.getElementById('lista').innerHTML = data ? Object.keys(data).map(id => `
-                <div class="card">
-                    <div><b>${data[id].nome}</b><br>Estoque: ${data[id].estoque || 0}</div>
-                    <div><button onclick="mudar('${id}', ${(data[id].estoque || 0) - 1})">-</button>
-                    <button onclick="mudar('${id}', ${(data[id].estoque || 0) + 1})">+</button></div>
-                </div>`).join('') : 'Vazio';
+            if(data) Object.keys(data).forEach(id => {
+                const p = data[id];
+                const est = p.estoque || 0;
+                container.innerHTML += `
+                    <div class="card">
+                        <div><b>${p.nome}</b><br><span class="${est <= 0 ? 'out' : ''}">${est <= 0 ? '🚫 ESGOTADO' : 'Stock: ' + est}</span></div>
+                        <div style="display:flex; gap:10px;">
+                            <button onclick="mudar('${id}', ${est - 1})">-</button>
+                            <button onclick="mudar('${id}', ${est + 1})">+</button>
+                        </div>
+                    </div>`;
+            });
         });
 
         window.mudar = (id, val) => { if(val >= 0) update(ref(db, `produtos/${id}`), { estoque: val }); };
