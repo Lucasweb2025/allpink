@@ -2,53 +2,47 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Estoque | All Pink</title>
+    <title>Estoque Allpink</title>
     <style>
-        body { background: #f4f4f4; font-family: sans-serif; padding: 20px; }
-        .card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .controls { display: flex; align-items: center; gap: 15px; }
-        button { width: 40px; height: 40px; border: none; background: #eee; border-radius: 5px; font-weight: bold; cursor: pointer; }
-        .esgotado { color: red; font-weight: bold; }
+        body { background: #f4f4f4; font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .card { background: white; padding: 20px; margin-bottom: 15px; border-radius: 12px; width: 100%; max-width: 400px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        button { width: 40px; height: 40px; border: none; background: #eee; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 20px; }
     </style>
 </head>
 <body>
-    <h1>Gestão de Estoque</h1>
+    <h1 style="color: #ff2d88;">Gestão de Estoque</h1>
     <div id="lista"></div>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        const firebaseConfig = { /* Mesmas chaves */ };
+        const firebaseConfig = {
+            apiKey: "AIzaSyDSfj6A4PortbieMelYDPNwZ9rJ84BW7ns",
+            authDomain: "all-pink.firebaseapp.app",
+            databaseURL: "https://all-pink-default-rtdb.firebaseio.com",
+            projectId: "all-pink",
+            storageBucket: "all-pink.firebasestorage.app",
+            messagingSenderId: "932996264727",
+            appId: "1:932996264727:web:fe800602542154f753bd52"
+        };
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        const pass = prompt("Senha Admin:");
+        const pass = prompt("Senha:");
         if(pass !== "adminallpink2026") window.location.href = "index.html";
 
         onValue(ref(db, 'produtos'), (snap) => {
             const data = snap.val();
-            const lista = document.getElementById('lista');
-            lista.innerHTML = "";
-            if(data) Object.keys(data).forEach(id => {
-                const p = data[id];
-                const estoque = p.estoque || 0;
-                lista.innerHTML += `
-                    <div class="card">
-                        <div>
-                            <strong>${p.nome}</strong><br>
-                            <span class="${estoque <= 0 ? 'esgotado' : ''}">${estoque <= 0 ? 'ESGOTADO (Oculto no site)' : 'Em estoque: ' + estoque}</span>
-                        </div>
-                        <div class="controls">
-                            <button onclick="ajustar('${id}', ${estoque - 1})">-</button>
-                            <b>${estoque}</b>
-                            <button onclick="ajustar('${id}', ${estoque + 1})">+</button>
-                        </div>
-                    </div>`;
-            });
+            document.getElementById('lista').innerHTML = data ? Object.keys(data).map(id => `
+                <div class="card">
+                    <div><b>${data[id].nome}</b><br>Estoque: ${data[id].estoque || 0}</div>
+                    <div><button onclick="mudar('${id}', ${(data[id].estoque || 0) - 1})">-</button>
+                    <button onclick="mudar('${id}', ${(data[id].estoque || 0) + 1})">+</button></div>
+                </div>`).join('') : 'Vazio';
         });
 
-        window.ajustar = (id, novo) => { if(novo >= 0) update(ref(db, `produtos/${id}`), { estoque: novo }); };
+        window.mudar = (id, val) => { if(val >= 0) update(ref(db, `produtos/${id}`), { estoque: val }); };
     </script>
 </body>
 </html>
