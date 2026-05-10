@@ -8,120 +8,25 @@
     <style>
         :root { --pink-vibrant: #ff2d88; --pink-soft: #ffccd5; --bg-app: #0f0f0f; --text-main: #ffffff; }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            background-color: var(--bg-app); 
-            font-family: 'Inter', sans-serif; 
-            color: var(--text-main); 
-            overflow: hidden; 
-            height: 100vh; 
-        }
-
-        .app-shell { 
-            width: 100%; 
-            max-width: 500px; 
-            height: 100vh; 
-            position: relative; 
-            margin: auto; 
-            overflow: hidden; 
-        }
-
-        /* AJUSTE DE CAMADA: z-index 1 (FUNDO) */
-        .bg-layer { 
-            position: absolute; 
-            top: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: #4a0e2a; 
-            clip-path: polygon(100% 0, 100% 60%, 0 100%, 0 0); 
-            z-index: 1; 
-            transition: 0.8s; 
-        }
-
-        header { 
-            position: absolute; 
-            top: 40px; 
-            width: 100%; 
-            display: flex; 
-            justify-content: space-between; 
-            padding: 0 25px; 
-            z-index: 5000; 
-        }
-
-        /* AJUSTE DE CAMADA: z-index 10 (CONTEÚDO) */
-        .track { 
-            display: flex; 
-            height: 100%; 
-            position: relative; 
-            z-index: 10; 
-            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1); 
-        }
-
-        .slide { 
-            min-width: 100%; 
-            height: 100%; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            padding: 40px; 
-            text-align: center; 
-        }
-
-        .slide img { 
-            max-width: 80%; 
-            filter: drop-shadow(0 30px 50px rgba(0,0,0,0.5)); 
-            border-radius: 15px; 
-        }
-
-        .add-btn { 
-            background: var(--pink-vibrant); 
-            color: white; 
-            border: none; 
-            padding: 18px; 
-            width: 260px; 
-            font-weight: 700; 
-            border-radius: 50px; 
-            margin-top: 20px; 
-            cursor: pointer; 
-        }
-
-        .cart-page { 
-            position: absolute; 
-            top: 0; 
-            right: -100%; 
-            width: 100%; 
-            height: 100%; 
-            background: #111; 
-            z-index: 10000; 
-            transition: 0.5s; 
-            padding: 80px 25px; 
-        }
-
+        body { background-color: var(--bg-app); font-family: 'Inter', sans-serif; color: var(--text-main); overflow: hidden; height: 100vh; }
+        .app-shell { width: 100%; max-width: 500px; height: 100vh; position: relative; margin: auto; overflow: hidden; }
+        .bg-layer { position: absolute; top: 0; width: 100%; height: 100%; background: #4a0e2a; clip-path: polygon(100% 0, 100% 60%, 0 100%, 0 0); z-index: 1; transition: 0.8s; }
+        header { position: absolute; top: 40px; width: 100%; display: flex; justify-content: space-between; padding: 0 25px; z-index: 5000; }
+        .track { display: flex; height: 100%; transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1); position: relative; z-index: 10; }
+        .slide { min-width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px; text-align: center; }
+        .slide img { max-width: 80%; filter: drop-shadow(0 30px 50px rgba(0,0,0,0.5)); border-radius: 15px; }
+        .add-btn { background: var(--pink-vibrant); color: white; border: none; padding: 18px; width: 260px; font-weight: 700; border-radius: 50px; margin-top: 20px; cursor: pointer; }
+        .cart-page { position: absolute; top: 0; right: -100%; width: 100%; height: 100%; background: #111; z-index: 10000; transition: 0.5s; padding: 80px 25px; }
         .cart-page.active { right: 0; }
-        
-        .whatsapp-btn { 
-            background: #25D366; 
-            color: white; 
-            border: none; 
-            padding: 20px; 
-            width: 100%; 
-            font-weight: 700; 
-            border-radius: 10px; 
-            margin-top: 20px; 
-            cursor: pointer; 
-        }
+        .whatsapp-btn { background: #25D366; color: white; border: none; padding: 20px; width: 100%; font-weight: 700; border-radius: 10px; margin-top: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="app-shell">
         <div class="bg-layer" id="bg-master"></div>
-        
         <header>
             <div style="font-family:'Bodoni Moda'; font-size:24px;">All Pink Beauty</div>
-            <div onclick="toggleCart()" style="cursor:pointer;">
-                🛒 <span id="badge" style="background:var(--pink-vibrant); border-radius:50%; padding:2px 7px; font-size:12px; display:none;">0</span>
-            </div>
+            <div onclick="toggleCart()" style="cursor:pointer;">🛒 <span id="badge" style="background:var(--pink-vibrant); border-radius:50%; padding:2px 7px; font-size:12px; display:none;">0</span></div>
         </header>
 
         <div class="track" id="track"></div>
@@ -156,9 +61,7 @@
         onValue(ref(db, 'produtos'), (snap) => {
             const data = snap.val();
             if(!data) return;
-            // Filtra apenas o que tem estoque
-            prods = Object.values(data).filter(p => (p.estoque || 0) > 0);
-            
+            prods = Object.values(data);
             const track = document.getElementById('track');
             track.innerHTML = prods.map((p, i) => `
                 <div class="slide">
@@ -179,25 +82,20 @@
         }
 
         window.addToCart = (i) => { cart.push(prods[i]); updateUI(); };
-        
         function updateUI() {
             const badge = document.getElementById('badge');
-            badge.innerText = cart.length; 
-            badge.style.display = 'inline';
+            badge.innerText = cart.length; badge.style.display = 'inline';
             const total = cart.reduce((a, b) => a + b.preco, 0);
             document.getElementById('totalDisplay').innerText = `R$ ${total.toFixed(2)}`;
             document.getElementById('cartItems').innerHTML = cart.map(p => `<p style="margin-bottom:10px">${p.nome} - R$ ${p.preco.toFixed(2)}</p>`).join('');
         }
 
         window.toggleCart = () => document.getElementById('cartPage').classList.toggle('active');
-        
         window.checkout = () => {
-            if(cart.length === 0) return;
-            const msg = encodeURIComponent(`*Novo Pedido All Pink*\n\n${cart.map(p => `• ${p.nome}`).join('\n')}\n\n*Total: R$ ${cart.reduce((a,b)=>a+b.preco,0).toFixed(2)}*`);
+            const msg = encodeURIComponent(`*Novo Pedido All Pink*\n${cart.map(p => `• ${p.nome}`).join('\n')}\n\nTotal: R$ ${cart.reduce((a,b)=>a+b.preco,0).toFixed(2)}`);
             window.open(`https://wa.me/5511965972240?text=${msg}`);
         };
 
-        // Swipe (Arraste)
         let x = 0;
         document.body.addEventListener('touchstart', e => x = e.touches[0].clientX);
         document.body.addEventListener('touchend', e => {
