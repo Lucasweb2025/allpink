@@ -11,6 +11,7 @@
         input, button { width: 100%; padding: 15px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px; }
         input { background: #222; color: white; border: 1px solid #333; }
         button { background: var(--pink); color: white; font-weight: bold; cursor: pointer; }
+        button:disabled { background: #555; cursor: not-allowed; }
         .product-item { background: #1a1a1a; padding: 10px; border-radius: 10px; display: flex; align-items: center; gap: 15px; margin-top: 10px; text-align: left; }
         .product-item img { width: 50px; height: 50px; border-radius: 5px; object-fit: cover; }
     </style>
@@ -23,8 +24,8 @@
             <input type="text" id="nome" placeholder="Nome do Produto">
             <input type="number" id="preco" placeholder="Preço" step="0.01">
             <input type="text" id="cor" placeholder="Cor de Fundo (Ex: #4a0e2a)">
-            <input type="text" id="fotoUrl" placeholder="Link da Imagem (URL)">
-            <button onclick="salvar()">CADASTRAR PRODUTO</button>
+            <input type="file" id="foto" accept="image/*">
+            <button id="btnSalvar" onclick="salvar()">CADASTRAR PRODUTO</button>
             <div id="lista" style="margin-top:20px;"></div>
         </div>
         <button id="btnEntrar" onclick="entrar()">ENTRAR</button>
@@ -33,6 +34,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // SUA CHAVE DA API IMGBB CONFIGURADA
+        const IMGBB_API_KEY = "72fb04220922c06b3b6fea61b6bf4c9c";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDSfj6A4PortbieMelYDPNwZ9rJ84BW7ns",
@@ -56,25 +60,55 @@
         };
 
         window.salvar = () => {
+            const file = document.getElementById('foto').files[0];
             const nome = document.getElementById('nome').value;
             const preco = parseFloat(document.getElementById('preco').value);
             const cor = document.getElementById('cor').value || '#4a0e2a';
-            const foto = document.getElementById('fotoUrl').value;
+            const btnSalvar = document.getElementById('btnSalvar');
 
-            if(!nome || !preco || !foto) return alert("Preencha todos os campos!");
+            if(!file || !nome || !preco) return alert("Preencha nome, preço e tire a foto!");
 
-            // Salva o link direto no Realtime Database (rápido e leve)
-            push(ref(db, 'produtos'), {
-                nome: nome,
-                preco: preco,
-                cor: cor,
-                foto: foto
-            }).then(() => {
-                alert("Produto cadastrado!");
+            btnSalvar.innerText = "ENVIANDO FOTO, AGUARDE...";
+            btnSalvar.disabled = true;
+
+            const formData = new FormData();
+            formData.append("image", file);
+
+            // Envia para o ImgBB de forma totalmente transparente
+            fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                if(result.success) {
+                    const urlFoto = result.data.url;
+
+                    // Salva a referência estruturada no Firebase
+                    return push(ref(db, 'produtos'), {
+                        nome: nome,
+                        preco: preco,
+                        cor: cor,
+                        foto: urlFoto
+                    });
+                } else {
+                    throw new Error("Falha no upload do ImgBB");
+                }
+            })
+            .then(() => {
+                alert("Produto cadastrado com sucesso!");
                 document.getElementById('nome').value = "";
                 document.getElementById('preco').value = "";
-                document.getElementById('fotoUrl').value = "";
-            }).catch(err => alert("Erro ao salvar: " + err.message));
+                document.getElementById('foto').value = "";
+                btnSalvar.innerText = "CADASTRAR PRODUTO";
+                btnSalvar.disabled = false;
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Erro ao cadastrar foto. Tente novamente.");
+                btnSalvar.innerText = "CADASTRAR PRODUTO";
+                btnSalvar.disabled = false;
+            });
         };
 
         onValue(ref(db, 'produtos'), (snap) => {
