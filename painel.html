@@ -4,39 +4,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Admin | All Pink Beauty</title>
+    <link rel="icon" href="./icone.svg" type="image/svg+xml">
     <style>
         :root { --pink: #ff2d88; --bg: #0f0f0f; }
-        body { background: var(--bg); color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
-        .container { width: 100%; max-width: 400px; text-align: center; }
-        input, button { width: 100%; padding: 15px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px; }
+        body { background: var(--bg); color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; min-height: 100vh; }
+        .container { width: 100%; max-width: 420px; text-align: center; }
+        input, button { width: 100%; padding: 15px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px; box-sizing: border-box; }
         input { background: #222; color: white; border: 1px solid #333; }
         button { background: var(--pink); color: white; font-weight: bold; cursor: pointer; }
         button:disabled { background: #555; cursor: not-allowed; }
-        .product-item { background: #1a1a1a; padding: 10px; border-radius: 10px; display: flex; align-items: center; gap: 15px; margin-top: 10px; text-align: left; }
-        .product-item img { width: 50px; height: 50px; border-radius: 5px; object-fit: cover; }
+        button.secondary { background: #333; }
+        button.danger { background: #c0392b; width: auto; padding: 8px 12px; margin: 0; font-size: 14px; }
+        .product-item {
+            background: #1a1a1a; padding: 12px; border-radius: 10px;
+            display: flex; align-items: center; gap: 12px; margin-top: 10px; text-align: left;
+        }
+        .product-item img { width: 50px; height: 50px; border-radius: 5px; object-fit: cover; flex-shrink: 0; }
+        .product-info { flex-grow: 1; min-width: 0; }
+        .product-info b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .product-actions { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+        .order-btns { display: flex; gap: 4px; }
+        .order-btns button { width: 32px; padding: 4px; margin: 0; font-size: 14px; background: #444; }
+        .auth-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .auth-header span { font-size: 13px; opacity: 0.7; overflow: hidden; text-overflow: ellipsis; }
+        .error-msg { color: #ff6b6b; font-size: 14px; margin: 8px 0; min-height: 20px; }
+        .status-msg { color: #7bed9f; font-size: 14px; margin: 8px 0; min-height: 20px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h2 style="color:var(--pink); margin-bottom:20px;">Cadastro All Pink</h2>
-        <input type="password" id="pass" placeholder="Senha do Painel">
+
+        <div id="loginBox">
+            <input type="email" id="email" placeholder="E-mail do administrador" autocomplete="username">
+            <input type="password" id="pass" placeholder="Senha" autocomplete="current-password">
+            <p class="error-msg" id="loginError"></p>
+            <p class="status-msg" id="loginStatus"></p>
+            <button type="button" id="btnEntrar">ENTRAR</button>
+        </div>
+
         <div id="form" style="display:none;">
+            <div class="auth-header">
+                <span id="userEmail"></span>
+                <button type="button" class="secondary" id="btnSair" style="width:auto;padding:8px 16px;margin:0;">SAIR</button>
+            </div>
             <input type="text" id="nome" placeholder="Nome do Produto">
-            <input type="number" id="preco" placeholder="Preço" step="0.01">
+            <input type="number" id="preco" placeholder="Preço" step="0.01" min="0">
             <input type="text" id="cor" placeholder="Cor de Fundo (Ex: #4a0e2a)">
             <input type="file" id="foto" accept="image/*">
-            <button id="btnSalvar" onclick="salvar()">CADASTRAR PRODUTO</button>
+            <button type="button" id="btnSalvar">CADASTRAR PRODUTO</button>
             <div id="lista" style="margin-top:20px;"></div>
         </div>
-        <button id="btnEntrar" onclick="entrar()">ENTRAR</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-        // SUA CHAVE DA API IMGBB CONFIGURADA
-        const IMGBB_API_KEY = "72fb04220922c06b3b6fea61b6bf4c9c";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, push, onValue, remove, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDSfj6A4PortbieMelYDPNwZ9rJ84BW7ns",
@@ -48,79 +72,220 @@
             appId: "1:932996264727:web:fe800602542154f753bd52"
         };
 
+        const IMGBB_API_KEY = "72fb04220922c06b3b6fea61b6bf4c9c";
+
+        function esc(str) {
+            const d = document.createElement('div');
+            d.textContent = str ?? '';
+            return d.innerHTML;
+        }
+
+        function formatPrice(n) {
+            return Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getDatabase(app);
 
-        window.entrar = () => {
-            if(document.getElementById('pass').value === 'allpink2026') {
-                document.getElementById('form').style.display = 'block';
-                document.getElementById('pass').style.display = 'none';
-                document.getElementById('btnEntrar').style.display = 'none';
-            }
-        };
+        let produtosCache = [];
 
-        window.salvar = () => {
-            const file = document.getElementById('foto').files[0];
-            const nome = document.getElementById('nome').value;
-            const preco = parseFloat(document.getElementById('preco').value);
-            const cor = document.getElementById('cor').value || '#4a0e2a';
-            const btnSalvar = document.getElementById('btnSalvar');
+        const loginError = document.getElementById('loginError');
+        const loginStatus = document.getElementById('loginStatus');
 
-            if(!file || !nome || !preco) return alert("Preencha nome, preço e tire a foto!");
+        function showError(msg) {
+            loginError.textContent = msg;
+            loginStatus.textContent = '';
+        }
 
-            btnSalvar.innerText = "ENVIANDO FOTO, AGUARDE...";
-            btnSalvar.disabled = true;
+        function showStatus(msg) {
+            loginStatus.textContent = msg;
+            loginError.textContent = '';
+        }
 
-            const formData = new FormData();
-            formData.append("image", file);
+        function showLogin() {
+            document.getElementById('loginBox').style.display = 'block';
+            document.getElementById('form').style.display = 'none';
+        }
 
-            // Envia para o ImgBB de forma totalmente transparente
-            fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-                method: "POST",
-                body: formData
-            })
-            .then(response => response.json())
-            .then(result => {
-                if(result.success) {
-                    const urlFoto = result.data.url;
+        function showPanel(user) {
+            document.getElementById('loginBox').style.display = 'none';
+            document.getElementById('form').style.display = 'block';
+            document.getElementById('userEmail').textContent = user.email;
+            loginError.textContent = '';
+            loginStatus.textContent = '';
+        }
 
-                    // Salva a referência estruturada no Firebase
-                    return push(ref(db, 'produtos'), {
-                        nome: nome,
-                        preco: preco,
-                        cor: cor,
-                        foto: urlFoto
-                    });
-                } else {
-                    throw new Error("Falha no upload do ImgBB");
-                }
-            })
-            .then(() => {
-                alert("Produto cadastrado com sucesso!");
-                document.getElementById('nome').value = "";
-                document.getElementById('preco').value = "";
-                document.getElementById('foto').value = "";
-                btnSalvar.innerText = "CADASTRAR PRODUTO";
-                btnSalvar.disabled = false;
-            })
-            .catch(err => {
-                console.error(err);
-                alert("Erro ao cadastrar foto. Tente novamente.");
-                btnSalvar.innerText = "CADASTRAR PRODUTO";
-                btnSalvar.disabled = false;
-            });
-        };
-
-        onValue(ref(db, 'produtos'), (snap) => {
-            const list = document.getElementById('lista');
-            list.innerHTML = "";
-            const data = snap.val();
-            if(data) Object.keys(data).forEach(id => {
-                list.innerHTML += `<div class="product-item"><img src="${data[id].foto}"> <div><b>${data[id].nome}</b><br>R$ ${data[id].preco.toFixed(2)}</div><button onclick="deletar('${id}')" style="width:auto; padding:5px 10px; background:red; margin-left:auto; color:white; border-radius:5px;">X</button></div>`;
-            });
+        onAuthStateChanged(auth, (user) => {
+            if (user) showPanel(user);
+            else showLogin();
         });
 
-        window.deletar = (id) => { if(confirm("Excluir produto?")) remove(ref(db, `produtos/${id}`)); };
+        async function entrar() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('pass').value;
+            const btn = document.getElementById('btnEntrar');
+
+            if (!email || !password) {
+                showError('Preencha e-mail e senha.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'ENTRANDO...';
+            showStatus('Conectando...');
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                showStatus('Login realizado!');
+            } catch (e) {
+                console.error(e);
+                const code = e?.code || '';
+                if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
+                    showError('E-mail ou senha incorretos.');
+                } else if (code === 'auth/invalid-email') {
+                    showError('E-mail inválido.');
+                } else if (code === 'auth/too-many-requests') {
+                    showError('Muitas tentativas. Aguarde alguns minutos.');
+                } else if (code === 'auth/network-request-failed') {
+                    showError('Sem conexão com a internet.');
+                } else {
+                    showError('Erro ao entrar: ' + (e.message || code || 'desconhecido'));
+                }
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'ENTRAR';
+            }
+        }
+
+        document.getElementById('btnEntrar').addEventListener('click', entrar);
+        document.getElementById('pass').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') entrar();
+        });
+        document.getElementById('email').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') entrar();
+        });
+        document.getElementById('btnSair').addEventListener('click', () => signOut(auth));
+
+        async function nextOrdem() {
+            const snap = await get(ref(db, 'produtos'));
+            const data = snap.val() || {};
+            return Object.values(data).reduce((max, p) => Math.max(max, p.ordem ?? 0), 0) + 1;
+        }
+
+        async function uploadFoto(file) {
+            const formData = new FormData();
+            formData.append("image", file);
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                method: "POST",
+                body: formData
+            });
+            const result = await res.json();
+            if (!result.success) throw new Error("Falha no upload da foto");
+            return result.data.url;
+        }
+
+        async function salvar() {
+            const file = document.getElementById('foto').files[0];
+            const nome = document.getElementById('nome').value.trim();
+            const preco = parseFloat(document.getElementById('preco').value);
+            const cor = document.getElementById('cor').value.trim() || '#4a0e2a';
+            const btnSalvar = document.getElementById('btnSalvar');
+
+            if (!file || !nome || isNaN(preco) || preco <= 0) {
+                return alert('Preencha nome, preço válido e selecione uma foto.');
+            }
+
+            btnSalvar.textContent = 'ENVIANDO FOTO, AGUARDE...';
+            btnSalvar.disabled = true;
+
+            try {
+                const urlFoto = await uploadFoto(file);
+                const ordem = await nextOrdem();
+                await push(ref(db, 'produtos'), { nome, preco, cor, foto: urlFoto, ordem });
+                alert('Produto cadastrado com sucesso!');
+                document.getElementById('nome').value = '';
+                document.getElementById('preco').value = '';
+                document.getElementById('cor').value = '';
+                document.getElementById('foto').value = '';
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao cadastrar. Verifique login e regras do banco no Firebase.');
+            } finally {
+                btnSalvar.textContent = 'CADASTRAR PRODUTO';
+                btnSalvar.disabled = false;
+            }
+        }
+
+        document.getElementById('btnSalvar').addEventListener('click', salvar);
+
+        function renderLista() {
+            const list = document.getElementById('lista');
+            if (!produtosCache.length) {
+                list.innerHTML = '<p style="opacity:0.5;">Nenhum produto cadastrado.</p>';
+                return;
+            }
+
+            list.innerHTML = produtosCache.map((p, idx) => `
+                <div class="product-item">
+                    <img src="${esc(p.foto)}" alt="${esc(p.nome)}">
+                    <div class="product-info">
+                        <b>${esc(p.nome)}</b>
+                        R$ ${formatPrice(p.preco)}
+                        <small style="opacity:0.5;display:block;">Ordem: ${p.ordem ?? 0}</small>
+                    </div>
+                    <div class="product-actions">
+                        <div class="order-btns">
+                            <button type="button" data-mover="${esc(p.id)}" data-dir="-1" ${idx === 0 ? 'disabled' : ''} title="Subir">▲</button>
+                            <button type="button" data-mover="${esc(p.id)}" data-dir="1" ${idx === produtosCache.length - 1 ? 'disabled' : ''} title="Descer">▼</button>
+                        </div>
+                        <button type="button" class="danger" data-delete="${esc(p.id)}">X</button>
+                    </div>
+                </div>
+            `).join('');
+
+            list.querySelectorAll('[data-mover]').forEach(btn => {
+                btn.addEventListener('click', () => mover(btn.dataset.mover, Number(btn.dataset.dir)));
+            });
+            list.querySelectorAll('[data-delete]').forEach(btn => {
+                btn.addEventListener('click', () => deletar(btn.dataset.delete));
+            });
+        }
+
+        onValue(ref(db, 'produtos'), (snap) => {
+            const data = snap.val();
+            produtosCache = data
+                ? Object.entries(data).map(([id, p]) => ({ id, ...p })).sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0))
+                : [];
+            renderLista();
+        });
+
+        async function mover(id, direction) {
+            const idx = produtosCache.findIndex(p => p.id === id);
+            const swapIdx = idx + direction;
+            if (idx < 0 || swapIdx < 0 || swapIdx >= produtosCache.length) return;
+
+            const current = produtosCache[idx];
+            const swap = produtosCache[swapIdx];
+            try {
+                await update(ref(db), {
+                    [`produtos/${current.id}/ordem`]: swap.ordem ?? swapIdx,
+                    [`produtos/${swap.id}/ordem`]: current.ordem ?? idx
+                });
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao reordenar.');
+            }
+        }
+
+        function deletar(id) {
+            if (confirm('Excluir produto?')) {
+                remove(ref(db, `produtos/${id}`)).catch(err => {
+                    console.error(err);
+                    alert('Erro ao excluir.');
+                });
+            }
+        }
     </script>
 </body>
 </html>
