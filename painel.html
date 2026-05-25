@@ -9,8 +9,9 @@
         :root { --pink: #ff2d88; --bg: #0f0f0f; }
         body { background: var(--bg); color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; min-height: 100vh; }
         .container { width: 100%; max-width: 420px; text-align: center; }
-        input, button { width: 100%; padding: 15px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px; box-sizing: border-box; }
-        input { background: #222; color: white; border: 1px solid #333; }
+        input, button, textarea { width: 100%; padding: 15px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px; box-sizing: border-box; }
+        input, textarea { background: #222; color: white; border: 1px solid #333; }
+        textarea { resize: vertical; min-height: 60px; font-family: inherit; }
         button { background: var(--pink); color: white; font-weight: bold; cursor: pointer; }
         button:disabled { background: #555; cursor: not-allowed; }
         button.secondary { background: #333; }
@@ -49,6 +50,7 @@
                 <button type="button" class="secondary" id="btnSair" style="width:auto;padding:8px 16px;margin:0;">SAIR</button>
             </div>
             <input type="text" id="nome" placeholder="Nome do Produto">
+            <textarea id="descricao" placeholder="Descrição / Subtítulo (opcional)" rows="2"></textarea>
             <input type="number" id="preco" placeholder="Preço" step="0.01" min="0">
             <input type="text" id="cor" placeholder="Cor de Fundo (Ex: #4a0e2a)">
             <input type="file" id="foto" accept="image/*">
@@ -188,6 +190,7 @@
         async function salvar() {
             const file = document.getElementById('foto').files[0];
             const nome = document.getElementById('nome').value.trim();
+            const descricao = document.getElementById('descricao').value.trim();
             const preco = parseFloat(document.getElementById('preco').value);
             const cor = document.getElementById('cor').value.trim() || '#4a0e2a';
             const btnSalvar = document.getElementById('btnSalvar');
@@ -202,9 +205,12 @@
             try {
                 const urlFoto = await uploadFoto(file);
                 const ordem = await nextOrdem();
-                await push(ref(db, 'produtos'), { nome, preco, cor, foto: urlFoto, ordem });
+                const produto = { nome, preco, cor, foto: urlFoto, ordem };
+                if (descricao) produto.descricao = descricao;
+                await push(ref(db, 'produtos'), produto);
                 alert('Produto cadastrado com sucesso!');
                 document.getElementById('nome').value = '';
+                document.getElementById('descricao').value = '';
                 document.getElementById('preco').value = '';
                 document.getElementById('cor').value = '';
                 document.getElementById('foto').value = '';
@@ -231,6 +237,7 @@
                     <img src="${esc(p.foto)}" alt="${esc(p.nome)}">
                     <div class="product-info">
                         <b>${esc(p.nome)}</b>
+                        ${p.descricao ? `<small style="opacity:0.6;display:block;margin:2px 0;">${esc(p.descricao).substring(0,50)}${p.descricao.length > 50 ? '...' : ''}</small>` : ''}
                         R$ ${formatPrice(p.preco)}
                         <small style="opacity:0.5;display:block;">Ordem: ${p.ordem ?? 0}</small>
                     </div>

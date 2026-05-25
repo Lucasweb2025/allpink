@@ -103,8 +103,21 @@
         }
         .meta { color: var(--text-main); transition: 0.6s; opacity: 0; transform: translateY(20px); }
         .slide.active .meta { opacity: 1; transform: translateY(0); transition-delay: 0.3s; }
-        .meta h3 { font-family: 'Bodoni Moda', serif; font-size: 28px; margin-bottom: 5px; }
-        .price { color: var(--pink-vibrant); font-weight: 600; font-size: 24px; display: block; margin-bottom: 20px; }
+        .meta h3 { font-family: 'Bodoni Moda', serif; font-size: 20px; margin-bottom: 6px; }
+        .meta .description {
+            font-size: 13px;
+            font-weight: 300;
+            opacity: 0.75;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            max-height: 60px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            padding: 0 10px;
+        }
+        .price { color: var(--pink-vibrant); font-weight: 600; font-size: 22px; display: block; margin-bottom: 16px; }
         .add-btn {
             background: var(--text-main); color: var(--bg-app);
             border: none; padding: 20px; width: 280px;
@@ -315,6 +328,7 @@
                     <div class="product-frame"><img src="${esc(p.foto)}" alt="${esc(p.nome)}" loading="lazy"></div>
                     <div class="meta">
                         <h3>${esc(p.nome)}</h3>
+                        ${p.descricao ? `<p class="description">${esc(p.descricao)}</p>` : ''}
                         <span class="price">R$ ${formatPrice(p.preco)}</span>
                         <button type="button" class="add-btn" onclick="addToCart('${esc(p.id)}')">ADICIONAR AO CARRINHO</button>
                     </div>
