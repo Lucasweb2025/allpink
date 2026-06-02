@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#ff2d88">
     <title>All Pink Beauty | Luxury Experience</title>
     <link rel="manifest" href="./manifest.json">
@@ -23,12 +23,21 @@
             --pink-soft: #4a0e2a;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html {
+            background-color: #0f0f0f;
+            height: 100%;
+            min-height: 100dvh;
+            min-height: -webkit-fill-available;
+        }
+        html.light-mode { background-color: #ffffff; }
         body {
             background-color: var(--bg-app);
             font-family: 'Inter', sans-serif;
             overflow: hidden;
-            height: 100vh;
-            width: 100vw;
+            width: 100%;
+            min-height: 100dvh;
+            min-height: -webkit-fill-available;
+            height: 100%;
             display: flex;
             justify-content: center;
             transition: background 0.5s var(--ease);
@@ -36,14 +45,20 @@
         .app-shell {
             width: 100%;
             max-width: 500px;
-            height: 100vh;
+            min-height: 100dvh;
+            min-height: -webkit-fill-available;
+            height: 100%;
             background: var(--bg-app);
-            position: relative;
+            position: fixed;
+            inset: 0;
+            left: 50%;
+            transform: translateX(-50%);
             overflow: hidden;
         }
         .bg-layer {
             position: absolute;
-            top: 0; right: 0; width: 100%; height: 100%;
+            top: 0; right: 0; left: 0; bottom: 0;
+            width: 100%;
             background: var(--pink-soft);
             clip-path: polygon(100% 0, 100% 60%, 0 100%, 0 0);
             transition: background 0.8s var(--ease);
@@ -84,7 +99,8 @@
             min-width: 100%; height: 100%;
             display: flex; flex-direction: column;
             justify-content: center; align-items: center;
-            padding: 100px 20px 40px; text-align: center;
+            padding: 100px 20px calc(40px + env(safe-area-inset-bottom, 0px));
+            text-align: center;
         }
         .product-frame {
             height: 45vh; width: 100%;
@@ -137,7 +153,9 @@
         .nav-prev { left: 12px; }
         .nav-next { right: 12px; }
         .dots {
-            position: absolute; bottom: 24px; left: 0; right: 0;
+            position: absolute;
+            bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+            left: 0; right: 0;
             display: flex; justify-content: center; gap: 8px; z-index: 20;
         }
         .dot {
@@ -363,6 +381,7 @@
         window.toggleTheme = () => {
             document.body.classList.toggle('dark-mode');
             const isDark = document.body.classList.contains('dark-mode');
+            document.documentElement.classList.toggle('light-mode', !isDark);
             document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
             localStorage.setItem('allpink-theme', isDark ? 'dark' : 'light');
         };
@@ -370,6 +389,7 @@
         const savedTheme = localStorage.getItem('allpink-theme');
         if (savedTheme === 'light') {
             document.body.classList.remove('dark-mode');
+            document.documentElement.classList.add('light-mode');
             document.getElementById('themeIcon').textContent = '🌙';
         }
 
