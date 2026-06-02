@@ -21,6 +21,13 @@
             }
         })();
     </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DHJ2CMV2ZC"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-DHJ2CMV2ZC');
+    </script>
     <title>All Pink Beauty | Luxury Experience</title>
     <meta name="description" content="Catálogo All Pink Beauty — produtos de beleza com pedido rápido pelo WhatsApp.">
     <link rel="canonical" href="https://allpink.app.br/">
@@ -397,19 +404,8 @@
 
         const CONFIG = {
             whatsapp: '5511965972240',
-            gaId: '' // Cole aqui seu ID do Google Analytics (ex: G-ABC123XYZ)
+            gaId: 'G-DHJ2CMV2ZC'
         };
-
-        if (CONFIG.gaId) {
-            const s = document.createElement('script');
-            s.async = true;
-            s.src = `https://www.googletagmanager.com/gtag/js?id=${CONFIG.gaId}`;
-            document.head.appendChild(s);
-            window.dataLayer = window.dataLayer || [];
-            window.gtag = function () { dataLayer.push(arguments); };
-            gtag('js', new Date());
-            gtag('config', CONFIG.gaId);
-        }
 
         const waMsg = encodeURIComponent('Olá! Vim pelo catálogo All Pink Beauty e gostaria de mais informações.');
         const waFloat = document.getElementById('waFloat');
