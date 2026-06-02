@@ -22,6 +22,19 @@
         })();
     </script>
     <title>All Pink Beauty | Luxury Experience</title>
+    <meta name="description" content="Catálogo All Pink Beauty — produtos de beleza com pedido rápido pelo WhatsApp.">
+    <link rel="canonical" href="https://allpink.app.br/">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://allpink.app.br/">
+    <meta property="og:site_name" content="All Pink Beauty">
+    <meta property="og:title" content="All Pink Beauty | Luxury Experience">
+    <meta property="og:description" content="Catálogo de produtos de beleza. Peça pelo WhatsApp com praticidade.">
+    <meta property="og:image" content="https://allpink.app.br/logooficial.png">
+    <meta property="og:locale" content="pt_BR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="All Pink Beauty | Luxury Experience">
+    <meta name="twitter:description" content="Catálogo de produtos de beleza. Peça pelo WhatsApp com praticidade.">
+    <meta name="twitter:image" content="https://allpink.app.br/logooficial.png">
     <link rel="manifest" href="./manifest.json">
     <link rel="icon" href="./icone.svg" type="image/svg+xml">
     <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -151,13 +164,92 @@
             font-weight: 300;
             opacity: 0.75;
             line-height: 1.5;
-            margin-bottom: 10px;
-            max-height: 60px;
+            margin-bottom: 4px;
+            max-height: 58px;
             overflow: hidden;
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             padding: 0 10px;
+        }
+        .meta .description.expanded {
+            max-height: none;
+            -webkit-line-clamp: unset;
+            display: block;
+            overflow: visible;
+        }
+        .read-more-btn {
+            background: none;
+            border: none;
+            color: var(--pink-vibrant);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+            padding: 0;
+            text-decoration: underline;
+            letter-spacing: 0.5px;
+        }
+        .wa-float {
+            position: absolute;
+            bottom: 56px;
+            right: 16px;
+            z-index: 6000;
+            width: 52px;
+            height: 52px;
+            background: #25D366;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.45);
+            text-decoration: none;
+            transition: transform 0.2s var(--ease);
+        }
+        .wa-float:active { transform: scale(0.92); }
+        .wa-float svg { width: 28px; height: 28px; fill: white; }
+        .install-banner {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 9000;
+            background: var(--bg-app);
+            border-top: 2px solid var(--pink-vibrant);
+            padding: 16px 20px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 -8px 30px rgba(0,0,0,0.2);
+            animation: slideUp 0.4s var(--ease);
+        }
+        .install-banner.show { display: flex; }
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .install-banner-text { flex: 1; text-align: left; color: var(--text-main); font-size: 13px; line-height: 1.4; }
+        .install-banner-text strong { display: block; font-size: 14px; margin-bottom: 2px; }
+        .install-banner-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+        .install-btn {
+            background: var(--pink-vibrant);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .install-dismiss {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            opacity: 0.5;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 4px;
         }
         .price { color: var(--pink-vibrant); font-weight: 600; font-size: 22px; display: block; margin-bottom: 16px; }
         .add-btn {
@@ -285,10 +377,46 @@
                 </div>
             </div>
         </div>
+        <a href="#" class="wa-float" id="waFloat" aria-label="Fale conosco no WhatsApp" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.881 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </a>
+        <div class="install-banner" id="installBanner">
+            <div class="install-banner-text">
+                <strong>Salve o app All Pink</strong>
+                <span id="installText">Acesse o catálogo direto da tela inicial.</span>
+            </div>
+            <div class="install-banner-actions">
+                <button type="button" class="install-btn" id="installBtn">Instalar</button>
+                <button type="button" class="install-dismiss" id="installDismiss">Agora não</button>
+            </div>
+        </div>
     </div>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const CONFIG = {
+            whatsapp: '5511965972240',
+            gaId: '' // Cole aqui seu ID do Google Analytics (ex: G-ABC123XYZ)
+        };
+
+        if (CONFIG.gaId) {
+            const s = document.createElement('script');
+            s.async = true;
+            s.src = `https://www.googletagmanager.com/gtag/js?id=${CONFIG.gaId}`;
+            document.head.appendChild(s);
+            window.dataLayer = window.dataLayer || [];
+            window.gtag = function () { dataLayer.push(arguments); };
+            gtag('js', new Date());
+            gtag('config', CONFIG.gaId);
+        }
+
+        const waMsg = encodeURIComponent('Olá! Vim pelo catálogo All Pink Beauty e gostaria de mais informações.');
+        const waFloat = document.getElementById('waFloat');
+        waFloat.href = `https://wa.me/${CONFIG.whatsapp}?text=${waMsg}`;
+        waFloat.addEventListener('click', () => {
+            if (CONFIG.gaId && typeof gtag === 'function') gtag('event', 'contact_whatsapp');
+        });
 
         const firebaseConfig = {
             apiKey: "AIzaSyDSfj6A4PortbieMelYDPNwZ9rJ84BW7ns",
@@ -375,7 +503,10 @@
                     <div class="product-frame"><img src="${esc(p.foto)}" alt="${esc(p.nome)}" loading="lazy"></div>
                     <div class="meta">
                         <h3>${esc(p.nome)}</h3>
-                        ${p.descricao ? `<p class="description">${esc(p.descricao)}</p>` : ''}
+                        ${p.descricao ? `
+                            <p class="description" id="desc-${esc(p.id)}">${esc(p.descricao)}</p>
+                            ${p.descricao.length > 85 ? `<button type="button" class="read-more-btn" onclick="toggleDesc('${esc(p.id)}')">Ler mais</button>` : ''}
+                        ` : ''}
                         <span class="price">R$ ${formatPrice(p.preco)}</span>
                         <button type="button" class="add-btn" onclick="addToCart('${esc(p.id)}')">ADICIONAR AO CARRINHO</button>
                     </div>
@@ -404,6 +535,16 @@
             if (next >= 0 && next < prods.length) {
                 index = next;
                 updateLayout();
+            }
+        };
+
+        window.toggleDesc = (id) => {
+            const el = document.getElementById('desc-' + id);
+            const btn = el?.nextElementSibling;
+            if (!el) return;
+            el.classList.toggle('expanded');
+            if (btn?.classList.contains('read-more-btn')) {
+                btn.textContent = el.classList.contains('expanded') ? 'Ver menos' : 'Ler mais';
             }
         };
 
@@ -477,6 +618,9 @@
             else cart[id] = { id: p.id, nome: p.nome, preco: p.preco, foto: p.foto, qty: 1 };
             saveCart();
             updateCartUI();
+            if (CONFIG.gaId && typeof gtag === 'function') {
+                gtag('event', 'add_to_cart', { item_id: id, item_name: p.nome, value: p.preco });
+            }
         };
 
         window.changeQty = (id, delta) => {
@@ -533,15 +677,70 @@
         window.checkout = () => {
             const items = Object.values(cart);
             if (!items.length) return alert('Seu carrinho está vazio!');
-            const numero = '5511965972240';
             let msg = '*Novo Pedido - All Pink Beauty*\n\n';
             items.forEach(item => {
                 const sub = Number(item.preco) * item.qty;
                 msg += `• ${item.nome} x${item.qty} - R$ ${formatPrice(sub)}\n`;
             });
             msg += `\n*Total: R$ ${formatPrice(cartTotal())}*`;
-            window.open(`https://wa.me/${numero}?text=${encodeURIComponent(msg)}`);
+            if (CONFIG.gaId && typeof gtag === 'function') gtag('event', 'checkout_whatsapp', { value: cartTotal() });
+            window.open(`https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`);
         };
+
+        /* Banner instalar app (PWA) */
+        let deferredInstallPrompt = null;
+        const installBanner = document.getElementById('installBanner');
+        const installBtn = document.getElementById('installBtn');
+        const installText = document.getElementById('installText');
+
+        function isStandalone() {
+            return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        }
+
+        function isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        }
+
+        function showInstallBanner() {
+            if (localStorage.getItem('allpink-install-dismissed') || isStandalone()) return;
+            if (isIOS()) {
+                installText.textContent = 'Toque em Compartilhar → "Adicionar à Tela de Início".';
+                installBtn.textContent = 'Entendi';
+            }
+            document.getElementById('waFloat').style.bottom = '110px';
+            installBanner.classList.add('show');
+        }
+
+        function dismissInstall() {
+            installBanner.classList.remove('show');
+            document.getElementById('waFloat').style.bottom = '';
+            localStorage.setItem('allpink-install-dismissed', '1');
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            if (!localStorage.getItem('allpink-install-dismissed') && !isStandalone()) {
+                installText.textContent = 'Instale na tela inicial para acesso rápido.';
+                installBtn.textContent = 'Instalar';
+                setTimeout(showInstallBanner, 2500);
+            }
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (isIOS()) { dismissInstall(); return; }
+            if (!deferredInstallPrompt) { dismissInstall(); return; }
+            deferredInstallPrompt.prompt();
+            await deferredInstallPrompt.userChoice;
+            deferredInstallPrompt = null;
+            dismissInstall();
+        });
+
+        document.getElementById('installDismiss').addEventListener('click', dismissInstall);
+
+        if (isIOS() && !localStorage.getItem('allpink-install-dismissed') && !isStandalone()) {
+            setTimeout(showInstallBanner, 3000);
+        }
 
         updateCartUI();
     </script>
