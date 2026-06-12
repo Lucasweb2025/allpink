@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Pink - Dashboard Financeiro</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --primary: #ff2d88;
+      --success: #2ec4b6;
+      --danger: #e63946;
+      --dark: #2b2d42;
+      --light: #f8f9fa;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      background-color: #f0f2f5;
+      color: var(--dark);
+    }
+    /* TELA DE LOGIN */
+    #login-screen {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, var(--dark) 0%, #111 100%);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 9999;
+    }
+    .login-box {
+      background: white; padding: 40px; border-radius: 16px;
+      text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 100%; max-width: 360px;
+    }
+    .login-box h2 { color: var(--primary); margin-bottom: 20px; }
+    .login-box input {
+      width: 100%; padding: 12px; margin-bottom: 20px;
+      border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px;
+    }
+    .login-box button {
+      background: var(--primary); color: white; border: none; width: 100%;
+      padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px;
+    }
+    .login-error { color: var(--danger); font-size: 14px; margin-bottom: 12px; min-height: 20px; }
+
+    /* PAINEL PRINCIPAL */
+    #main-dashboard { display: none; padding: 20px; max-width: 1200px; margin: 0 auto; }
+    
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 30px; border-bottom: 2px solid #ddd; padding-bottom: 15px;
+    }
+    header h1 { margin: 0; color: var(--dark); font-size: 24px; }
+    header button { background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+
+    /* CARDS DE RESUMO */
+    .cards-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;
+    }
+    .card {
+      background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border-left: 6px solid #ccc;
+    }
+    .card.saldo { border-left-color: var(--dark); }
+    .card.entradas { border-left-color: var(--success); }
+    .card.saidas { border-left-color: var(--danger); }
+    .card span { font-size: 14px; color: #6c757d; font-weight: 600; }
+    .card h2 { margin: 10px 0 0 0; font-size: 28px; }
+
+    /* CONTEÚDO EM DUAS COLUNAS */
+    .dashboard-grid {
+      display: grid; grid-template-columns: 1fr; gap: 30px;
+    }
+    @media(min-width: 900px) { .dashboard-grid { grid-template-columns: 2fr 1fr; } }
+
+    .block { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .block h3 { margin-top: 0; margin-bottom: 20px; color: #495057; }
+
+    /* CONTAINERS DE GRÁFICOS */
+    .charts-container {
+      display: grid; grid-template-columns: 1fr; gap: 20px;
+    }
+    @media(min-width: 600px) { .charts-container { grid-template-columns: 1fr 1fr; } }
+
+    /* FORMULÁRIOS E BOTÕES CORRIGIDOS */
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-size: 14px; font-weight: 500; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box;
+    }
+    .btn-submit {
+      width: 100%; padding: 14px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; transition: all 0.2s ease;
+    }
+    
+    /* CORES VIVAS COM SOMBRA PROFISSIONAL */
+    .btn-success { 
+      background-color: var(--success) !important; 
+      box-shadow: 0 4px 12px rgba(46, 196, 182, 0.4);
+    }
+    .btn-success:hover { 
+      filter: brightness(0.9);
+      transform: translateY(-1px);
+    }
+    
+    .btn-danger { 
+      background-color: var(--danger) !important; 
+      box-shadow: 0 4px 12px rgba(230, 57, 70, 0.4);
+    }
+    .btn-danger:hover { 
+      filter: brightness(0.9);
+      transform: translateY(-1px);
+    }
+
+    /* TABELA DE EXTRATO */
+    .table-container { overflow-x: auto; max-height: 400px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 12px; border-bottom: 1px solid #dee2e6; font-size: 14px; }
+    th { background-color: #f8f9fa; color: #495057; }
+    .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; display: inline-block; }
+    .badge.entrada { background: #d8f3dc; color: #1b4332; }
+    .badge.saida { background: #f8d7da; color: #842029; }
+    .badge-cat { background: #e9ecef; color: #495057; font-size: 12px; font-weight: 500; }
+    
+    .btn-delete { background: none; border: none; color: var(--danger); cursor: pointer; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div id="login-screen">
+    <div class="login-box">
+      <h2>All Pink Finance</h2>
+      <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Use o mesmo e-mail e senha do painel de produtos</p>
+      <input type="email" id="email-input" placeholder="E-mail do administrador" autocomplete="username">
+      <input type="password" id="pass-input" placeholder="Senha" autocomplete="current-password">
+      <p class="login-error" id="login-error"></p>
+      <button type="button" id="btn-entrar">Acessar Painel</button>
+    </div>
+  </div>
+
+  <div id="main-dashboard">
+    <header>
+      <h1>🌸 All Pink Beauty • Gestão Financeira</h1>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span id="user-email" style="font-size:13px;color:#666;"></span>
+        <button type="button" id="btn-sair">Sair</button>
+      </div>
+    </header>
+
+    <div class="cards-grid">
+      <div class="card saldo">
+        <span>Saldo Caixa Atual</span>
+        <h2 id="txt-saldo" style="color: var(--dark);">R$ 0,00</h2>
+      </div>
+      <div class="card entradas">
+        <span>Total de Entradas</span>
+        <h2 id="txt-entradas" style="color: var(--success);">R$ 0,00</h2>
+      </div>
+      <div class="card saidas">
+        <span>Total de Saídas (Custos)</span>
+        <h2 id="txt-saidas" style="color: var(--danger);">R$ 0,00</h2>
+      </div>
+    </div>
+
+    <div class="dashboard-grid">
+      
+      <div style="display: flex; flex-direction: column; gap: 30px;">
+        <div class="block">
+          <div class="charts-container">
+            <div>
+              <h3 style="font-size:16px;">📊 Balanço Geral</h3>
+              <canvas id="financeChart" style="max-height: 220px;"></canvas>
+            </div>
+            <div>
+              <h3 style="font-size:16px;">🎯 Vendas por Categoria</h3>
+              <canvas id="categoryChart" style="max-height: 220px;"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="block">
+          <h3>📋 Extrato de Fluxo de Caixa</h3>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Descrição</th>
+                  <th>Tipo</th>
+                  <th>Categoria</th>
+                  <th>Valor Total</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="lista-fluxo">
+                </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 30px;">
+        <div class="block">
+          <h3>💰 Lançar Movimentação</h3>
+          <form id="fluxo-form">
+            <div class="form-group">
+              <label>Tipo de Registro</label>
+              <select id="fluxo-tipo" onchange="configurarFormulario()" required>
+                <option value="Entrada">🟢 Entrada (Venda / Receita)</option>
+                <option value="Saída">🔴 Saída (Investimento / Custo / Compra)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Categoria</label>
+              <select id="fluxo-categoria" required>
+                </select>
+            </div>
+            <div class="form-group">
+              <label>Item / Descrição detalhada</label>
+              <input type="text" id="fluxo-desc" placeholder="Ex: Rímel Melu, Sabonete Dermachem, Sacolas decoradas" required>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+              <div style="flex: 2;">
+                <label style="display:block; font-size:14px; font-weight:500; margin-bottom:5px;">Preço Unitário (R$)</label>
+                <input type="number" id="fluxo-valor" step="0.01" placeholder="0.00" required oninput="calcularTotalPreview()" style="width:100%; padding:10px; border:1px solid #ced4da; border-radius:6px; box-sizing:border-box;">
+              </div>
+              <div style="flex: 1;">
+                <label style="display:block; font-size:14px; font-weight:500; margin-bottom:5px;">Qtd</label>
+                <input type="number" id="fluxo-qtd" value="1" min="1" required oninput="calcularTotalPreview()" style="width:100%; padding:10px; border:1px solid #ced4da; border-radius:6px; box-sizing:border-box;">
+              </div>
+            </div>
+
+            <div style="margin-bottom: 20px; padding: 10px; background: #fff0f6; border-radius: 6px; font-size: 14px; font-weight: bold; color: var(--primary); text-align: center; border: 1px dashed var(--primary);">
+              Total do Lançamento: <span id="fluxo-total-preview">R$ 0,00</span>
+            </div>
+
+            <button type="submit" id="btn-acao" class="btn-submit btn-success">Confirmar Entrada</button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDSfj6A4PortbieMelYDPNwZ9rJ84BW7ns",
+      authDomain: "all-pink.firebaseapp.com",
+      databaseURL: "https://all-pink-default-rtdb.firebaseio.com",
+      projectId: "all-pink",
+      storageBucket: "all-pink.firebasestorage.app",
+      messagingSenderId: "932996264727",
+      appId: "1:932996264727:web:fe800602542154f753bd52"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const dbRef = ref(db, 'financeiro_oficial');
+
+    const categoriasEntrada = ["💄 Maquiagem", "🧼 Skincare", "🩷 Acessórios", "🌸 Corpo & Fragrâncias", "🎁 Kits", "✨ Outros"];
+    const categoriasSaida = ["📦 Compra de Estoque", "🛍️ Embalagens", "🚚 Frete / Logística", "🚚 Investimento Inicial", "📣 Marketing / Anúncios", "🛠️ Custos Operacionais"];
+
+    let meuGraficoGeral;
+    let meuGraficoCategorias;
+    let dadosListener = null;
+    let dashboardReady = false;
+
+    const loginScreen = document.getElementById('login-screen');
+    const mainDashboard = document.getElementById('main-dashboard');
+    const loginError = document.getElementById('login-error');
+
+    function esc(str) {
+      const d = document.createElement('div');
+      d.textContent = str ?? '';
+      return d.innerHTML;
+    }
+
+    function showLogin() {
+      loginScreen.style.display = 'flex';
+      mainDashboard.style.display = 'none';
+      if (dadosListener) { dadosListener(); dadosListener = null; }
+    }
+
+    function showDashboard(user) {
+      loginScreen.style.display = 'none';
+      mainDashboard.style.display = 'block';
+      document.getElementById('user-email').textContent = user.email;
+      loginError.textContent = '';
+      if (!dashboardReady) {
+        configurarFormulario();
+        inicializarGraficos();
+        dashboardReady = true;
+      }
+      carregarDadosFinanceiros();
+    }
+
+    async function entrar() {
+      const email = document.getElementById('email-input').value.trim();
+      const password = document.getElementById('pass-input').value;
+      const btn = document.getElementById('btn-entrar');
+
+      if (!email || !password) {
+        loginError.textContent = 'Preencha e-mail e senha.';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Entrando...';
+      loginError.textContent = '';
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (e) {
+        const code = e?.code || '';
+        if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
+          loginError.textContent = 'E-mail ou senha incorretos.';
+        } else if (code === 'auth/network-request-failed') {
+          loginError.textContent = 'Sem conexão com a internet.';
+        } else {
+          loginError.textContent = 'Erro ao entrar. Tente novamente.';
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Acessar Painel';
+      }
+    }
+
+    document.getElementById('btn-entrar').addEventListener('click', entrar);
+    document.getElementById('pass-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') entrar(); });
+    document.getElementById('email-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') entrar(); });
+    document.getElementById('btn-sair').addEventListener('click', () => signOut(auth));
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) showDashboard(user);
+      else showLogin();
+    });
+
+    window.configurarFormulario = function configurarFormulario() {
+      const tipo = document.getElementById('fluxo-tipo').value;
+      const btn = document.getElementById('btn-acao');
+      const selectCat = document.getElementById('fluxo-categoria');
+      selectCat.innerHTML = '';
+      const lista = tipo === 'Entrada' ? categoriasEntrada : categoriasSaida;
+      btn.innerText = tipo === 'Entrada' ? 'Confirmar Entrada' : 'Confirmar Saída';
+      btn.className = tipo === 'Entrada' ? 'btn-submit btn-success' : 'btn-submit btn-danger';
+      lista.forEach(cat => { selectCat.innerHTML += `<option value="${esc(cat)}">${esc(cat)}</option>`; });
+      calcularTotalPreview();
+    };
+
+    window.calcularTotalPreview = function calcularTotalPreview() {
+      const valorUnitario = parseFloat(document.getElementById('fluxo-valor').value) || 0;
+      const quantidade = parseInt(document.getElementById('fluxo-qtd').value) || 1;
+      const totalCalculado = valorUnitario * quantidade;
+      document.getElementById('fluxo-total-preview').innerText = `R$ ${totalCalculado.toFixed(2).replace('.', ',')}`;
+    };
+
+    function inicializarGraficos() {
+      const ctxGeral = document.getElementById('financeChart').getContext('2d');
+      meuGraficoGeral = new Chart(ctxGeral, {
+        type: 'bar',
+        data: {
+          labels: ['Entradas', 'Saídas'],
+          datasets: [{ label: 'Total (R$)', data: [0, 0], backgroundColor: ['#2ec4b6', '#e63946'], borderRadius: 6 }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+      });
+
+      const ctxCat = document.getElementById('categoryChart').getContext('2d');
+      meuGraficoCategorias = new Chart(ctxCat, {
+        type: 'doughnut',
+        data: {
+          labels: ["Maquiagem", "Skincare", "Acessórios", "Corpo & Fragrâncias", "Kits", "Outros"],
+          datasets: [{ data: [0, 0, 0, 0, 0, 0], backgroundColor: ['#ff2d88', '#06d6a0', '#ffb703', '#118ab2', '#9b5de5', '#6c757d'] }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } }
+      });
+    }
+
+    document.getElementById('fluxo-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const tipo = document.getElementById('fluxo-tipo').value;
+      const categoria = document.getElementById('fluxo-categoria').value;
+      let desc = document.getElementById('fluxo-desc').value.trim();
+      const valorUnitario = parseFloat(document.getElementById('fluxo-valor').value);
+      const qtd = parseInt(document.getElementById('fluxo-qtd').value);
+      const valorTotal = valorUnitario * qtd;
+
+      if (!desc || isNaN(valorUnitario) || valorUnitario <= 0 || isNaN(qtd) || qtd < 1) {
+        alert('Preencha descrição, valor e quantidade válidos.');
+        return;
+      }
+
+      if (qtd > 1) desc = `${desc} (${qtd}x R$ ${valorUnitario.toFixed(2).replace('.', ',')})`;
+
+      const hoje = new Date();
+      const dataStr = hoje.toLocaleDateString('pt-BR') + ' ' + hoje.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+      try {
+        await push(dbRef, { tipo, categoria, descricao: desc, valor: valorTotal, data: dataStr });
+        document.getElementById('fluxo-desc').value = '';
+        document.getElementById('fluxo-valor').value = '';
+        document.getElementById('fluxo-qtd').value = '1';
+        document.getElementById('fluxo-total-preview').innerText = 'R$ 0,00';
+        alert('Movimentação registrada com sucesso!');
+      } catch (err) {
+        console.error(err);
+        alert('Erro ao salvar. Verifique login e regras do Firebase (financeiro_oficial).');
+      }
+    });
+
+    function carregarDadosFinanceiros() {
+      if (dadosListener) dadosListener();
+      dadosListener = onValue(dbRef, (snapshot) => {
+        let somatorioEntradas = 0;
+        let somatorioSaidas = 0;
+        let tabelaHtml = '';
+        const totaisPorCategoria = {
+          "💄 Maquiagem": 0, "🧼 Skincare": 0, "🩷 Acessórios": 0,
+          "🌸 Corpo & Fragrâncias": 0, "🎁 Kits": 0, "✨ Outros": 0
+        };
+        const dados = snapshot.val();
+
+        if (dados) {
+          Object.keys(dados).reverse().forEach(key => {
+            const item = dados[key];
+            const v = parseFloat(item.valor) || 0;
+            const catLimpa = item.categoria || "✨ Outros";
+            if (item.tipo === 'Entrada') {
+              somatorioEntradas += v;
+              if (totaisPorCategoria[catLimpa] !== undefined) totaisPorCategoria[catLimpa] += v;
+              else totaisPorCategoria["✨ Outros"] += v;
+            } else if (item.tipo === 'Saída') {
+              somatorioSaidas += v;
+            }
+            tabelaHtml += `
+              <tr>
+                <td style="color:#666;font-size:13px;">${esc(item.data)}</td>
+                <td style="font-weight:500;">${esc(item.descricao)}</td>
+                <td><span class="badge ${item.tipo === 'Entrada' ? 'entrada' : 'saida'}">${esc(item.tipo)}</span></td>
+                <td><span class="badge badge-cat">${esc(catLimpa)}</span></td>
+                <td style="font-weight:bold;color:${item.tipo === 'Entrada' ? 'var(--success)' : 'var(--danger)'}">R$ ${v.toFixed(2).replace('.', ',')}</td>
+                <td><button type="button" class="btn-delete" data-delete="${esc(key)}">✕</button></td>
+              </tr>`;
+          });
+        } else {
+          tabelaHtml = '<tr><td colspan="6" style="text-align:center;color:#999;padding:20px;">Nenhum lançamento feito ainda.</td></tr>';
+        }
+
+        const saldoCaixa = somatorioEntradas - somatorioSaidas;
+        document.getElementById('txt-saldo').innerText = `R$ ${saldoCaixa.toFixed(2).replace('.', ',')}`;
+        document.getElementById('txt-saldo').style.color = saldoCaixa >= 0 ? 'var(--dark)' : 'var(--danger)';
+        document.getElementById('txt-entradas').innerText = `R$ ${somatorioEntradas.toFixed(2).replace('.', ',')}`;
+        document.getElementById('txt-saidas').innerText = `R$ ${somatorioSaidas.toFixed(2).replace('.', ',')}`;
+        document.getElementById('lista-fluxo').innerHTML = tabelaHtml;
+
+        document.querySelectorAll('[data-delete]').forEach(btn => {
+          btn.addEventListener('click', () => deletarRegistro(btn.dataset.delete));
+        });
+
+        if (meuGraficoGeral) {
+          meuGraficoGeral.data.datasets[0].data = [somatorioEntradas, somatorioSaidas];
+          meuGraficoGeral.update();
+        }
+        if (meuGraficoCategorias) {
+          meuGraficoCategorias.data.datasets[0].data = [
+            totaisPorCategoria["💄 Maquiagem"], totaisPorCategoria["🧼 Skincare"],
+            totaisPorCategoria["🩷 Acessórios"], totaisPorCategoria["🌸 Corpo & Fragrâncias"],
+            totaisPorCategoria["🎁 Kits"], totaisPorCategoria["✨ Outros"]
+          ];
+          meuGraficoCategorias.update();
+        }
+      }, (err) => {
+        console.error(err);
+        alert('Erro ao carregar dados. Atualize as regras do Firebase para financeiro_oficial.');
+      });
+    }
+
+    async function deletarRegistro(id) {
+      if (!confirm('Tem certeza que deseja apagar este lançamento?')) return;
+      try {
+        await remove(ref(db, `financeiro_oficial/${id}`));
+      } catch (err) {
+        console.error(err);
+        alert('Erro ao excluir registro.');
+      }
+    }
+  </script>
+</body>
+</html>
