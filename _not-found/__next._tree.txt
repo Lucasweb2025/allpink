@@ -1,0 +1,4 @@
+:HL["/_next/static/chunks/20ddws4-rhsqk.css","style"]
+:HL["/video/abertura-desktop.mp4","video",{"type":"video/mp4","media":"(min-aspect-ratio: 1/1)"}]
+:HL["/video/abertura-mobile.mp4","video",{"type":"video/mp4","media":"(max-aspect-ratio: 0.9999/1)"}]
+0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":4192,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}},"staleTime":300,"buildId":"PA6gYLuQokZilvIgi3YE9"}
